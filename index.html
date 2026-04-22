@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian UI - Professional React Library</title>
+    <link rel="stylesheet" href="src/index.css">
+    <!-- React & Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Helper to load components as if they were modules
+        // In a real project, these are separate files. 
+        // Here we define them for the CDN demo.
+
+        const Button = ({ children, variant = 'primary', onClick, className = '', style = {} }) => {
+            const variantClass = `btn-${variant}`;
+            return (
+                <button
+                    className={`btn ${variantClass} ${className}`}
+                    onClick={onClick}
+                    style={style}
+                >
+                    {children}
+                </button>
+            );
+        };
+
+        const Card = ({ title, description, image, children, className = '' }) => {
+            return (
+                <div className={`glass glass-hover ${className}`} style={{ padding: '24px', overflow: 'hidden' }}>
+                    {image && (
+                        <div style={{ margin: '-24px -24px 20px -24px', height: '200px', overflow: 'hidden' }}>
+                            <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                    )}
+                    <h3 style={{ marginBottom: '12px', fontSize: '1.5rem' }}>{title}</h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>{description}</p>
+                    {children}
+                </div>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="glass modal-content" onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h2>{title}</h2>
+                            <button
+                                onClick={onClose}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.5rem' }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div>{children}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const VoiceAI = () => {
+            const [isSpeaking, setIsSpeaking] = React.useState(false);
+            const [progress, setProgress] = React.useState(0);
+
+            const script = [
+                { text: "Welcome to the Obsidian React Component Library. I am your AI guide. Over the next two minutes, I will walk you through our professional design system.", time: 0 },
+                { text: "Our library is built on a foundation of 'Glassmorphism'—notice the subtle blurring and translucency in our cards and modals. We use a deep obsidian background with electric blue accents to create a premium, high-tech feel.", time: 15 },
+                { text: "Let's look at our Buttons. They aren't just buttons; they are interactive experiences. Each variant—Primary, Secondary, and Glass—features optimized hover states and ripple effects, ensuring maximum engagement and accessibility.", time: 45 },
+                { text: "Moving to our Cards. These are the building blocks of modern dashboards. They feature interactive lift effects, clean typography using the 'Outfit' font family, and responsive padding that adapts to any screen size.", time: 75 },
+                { text: "Finally, our Modals. We use smooth scale-in animations and backdrop blurring to keep the user focused on the task at hand without losing context. This library is designed for performance, modularity, and visual excellence.", time: 100 },
+                { text: "Thank you for exploring Obsidian. Our code is clean, our design is bold, and our components are ready for production. Enjoy the tour!", time: 115 }
+            ];
+
+            const speak = () => {
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    setIsSpeaking(false);
+                    setProgress(0);
+                    return;
+                }
+
+                setIsSpeaking(true);
+                let currentIndex = 0;
+
+                const processNext = () => {
+                    if (currentIndex >= script.length) {
+                        setIsSpeaking(false);
+                        setProgress(100);
+                        return;
+                    }
+
+                    const part = script[currentIndex];
+                    const utterance = new SpeechSynthesisUtterance(part.text);
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.1;
+
+                    utterance.onend = () => {
+                        currentIndex++;
+                        setProgress((currentIndex / script.length) * 100);
+                        processNext();
+                    };
+
+                    // Highlight elements based on timing
+                    if (part.text.includes("Buttons")) document.getElementById('btn-section')?.classList.add('tour-highlight');
+                    if (part.text.includes("Cards")) {
+                        document.getElementById('btn-section')?.classList.remove('tour-highlight');
+                        document.getElementById('card-section')?.classList.add('tour-highlight');
+                    }
+                    if (part.text.includes("Modals")) {
+                        document.getElementById('card-section')?.classList.remove('tour-highlight');
+                        document.getElementById('modal-section')?.classList.add('tour-highlight');
+                    }
+
+                    window.speechSynthesis.speak(utterance);
+                };
+
+                processNext();
+            };
+
+            React.useEffect(() => {
+                return () => window.speechSynthesis.cancel();
+            }, []);
+
+            return (
+                <div className="glass" style={{ padding: '20px', position: 'fixed', bottom: '20px', right: '20px', width: '300px', zIndex: 2000 }}>
+                    <h4 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: '10px', height: '10px', background: isSpeaking ? '#10b981' : '#ef4444', borderRadius: '50%', display: 'inline-block' }}></span>
+                        AI Project Guide
+                    </h4>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
+                        {isSpeaking ? "Explaining the project (2 min)..." : "Click to start the voice-guided tour."}
+                    </p>
+                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginBottom: '15px', overflow: 'hidden' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.3s ease' }}></div>
+                    </div>
+                    <button className="btn btn-primary" onClick={speak} style={{ width: '100%', justifyContent: 'center' }}>
+                        {isSpeaking ? "Stop Tour" : "Start Voice AI"}
+                    </button>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+            return (
+                <>
+                    <div className="bg-glow"></div>
+                    <div className="container">
+                        <header style={{ textAlign: 'center', padding: '60px 0' }}>
+                            <h1 style={{ fontSize: '4.5rem', marginBottom: '10px' }} className="gradient-text">Obsidian UI</h1>
+                            <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>Professional React Component Library for Modern Web Apps</p>
+                        </header>
+
+                        <section id="btn-section" style={{ marginBottom: '80px', padding: '20px', borderRadius: '24px' }}>
+                            <div className="section-header">
+                                <h2>Precision Buttons</h2>
+                                <p>Fully customizable interaction points with smooth transitions.</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <Button variant="primary">Primary Action</Button>
+                                <Button variant="glass">Secondary Option</Button>
+                                <Button variant="primary" onClick={() => setIsModalOpen(true)}>Open Modal</Button>
+                            </div>
+                        </section>
+
+                        <section id="card-section" style={{ marginBottom: '80px', padding: '20px', borderRadius: '24px' }}>
+                            <div className="section-header">
+                                <h2>Glassmorphic Cards</h2>
+                                <p>Content containers with depth and visual hierarchy.</p>
+                            </div>
+                            <div className="grid">
+                                <Card
+                                    title="Analytics Dashboard"
+                                    description="Real-time data visualization with glassmorphic depth and premium hover effects."
+                                    image="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+                                >
+                                    <Button variant="glass" style={{ width: '100%', justifyContent: 'center' }}>View Report</Button>
+                                </Card>
+                                <Card
+                                    title="Cloud Infrastructure"
+                                    description="Scalable resources managed with our custom UI components."
+                                    image="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"
+                                >
+                                    <Button variant="glass" style={{ width: '100%', justifyContent: 'center' }}>Configure</Button>
+                                </Card>
+                                <Card
+                                    title="Network Security"
+                                    description="Advanced protection layers integrated seamlessly into your workflow."
+                                    image="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80"
+                                >
+                                    <Button variant="glass" style={{ width: '100%', justifyContent: 'center' }}>Launch Shield</Button>
+                                </Card>
+                            </div>
+                        </section>
+
+                        <section id="modal-section" style={{ marginBottom: '80px', padding: '20px', borderRadius: '24px' }}>
+                            <div className="section-header">
+                                <h2>Contextual Modals</h2>
+                                <p>Focused overlays for critical user tasks.</p>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <Button variant="primary" onClick={() => setIsModalOpen(true)}>Trigger Demo Modal</Button>
+                            </div>
+                        </section>
+
+                        <Modal
+                            isOpen={isModalOpen}
+                            onClose={() => setIsModalOpen(false)}
+                            title="Professional Modal"
+                        >
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                                This modal features a backdrop blur effect and a smooth scale animation. It's designed to keep users focused while maintaining the aesthetic of the application.
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                <Button variant="glass" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                <Button variant="primary" onClick={() => setIsModalOpen(false)}>Confirm</Button>
+                            </div>
+                        </Modal>
+
+                        <VoiceAI />
+
+                        <footer style={{ textAlign: 'center', padding: '40px 0', borderTop: '1px solid var(--card-border)', marginTop: '40px' }}>
+                            <p style={{ color: 'var(--text-muted)' }}>© 2026 Rana UI Framework. Built for Professionals.</p>
+                        </footer>
+                    </div>
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
